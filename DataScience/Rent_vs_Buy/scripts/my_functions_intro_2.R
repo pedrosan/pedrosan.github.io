@@ -1,76 +1,7 @@
-#-------------------------------------------------------------------------------
-# my functions definitions
-#-------------------------------------------------------------------------------
 
-cumprod.matrix.old <- function(x) {
-    nrows <- dim(x)[1] 
-    ncols <- dim(x)[2]
-    y <- matrix(1, nrow = nrows, ncol = ncols)
-    y[1, ] <- x[1, ]
-    for (i in 2:nrows) {
-        y[i, ] <- y[i-1, ]*x[i, ]
-    }
-    return(y)
-}
+## ---- my_functions_intro_2
 
-cumprod.matrix <- function(x) {
-    nrows <- dim(x)[1] 
-    ncols <- dim(x)[2]
-    y <- matrix(1, nrow = nrows, ncol = ncols)
-    y[1, ] <- x[1, ]
-    for (i in 1:ncols) {
-        y[, i] <- cumprod(x[, i])
-    }
-    return(y)
-}
-
-cumdiv.matrix <- function(x) {
-    nrows <- dim(x)[1] 
-    ncols <- dim(x)[2]
-    y <- matrix(1, nrow = nrows, ncol = ncols)
-    y[1, ] <- x[1, ]
-    for (i in 2:nrows) {
-        y[i, ] <- x[i, ] / x[i-1, ]
-    }
-    return(y)
-}
-
-cumsum.matrix <- function(x) {
-    nrows <- dim(x)[1] 
-    ncols <- dim(x)[2]
-    y <- matrix(1, nrow = nrows, ncol = ncols)
-    y[1, ] <- x[1, ]
-    for (i in 1:ncols) {
-        y[, i] <- cumsum(x[, i])
-    }
-    #for (i in 2:nrows) {
-    #    y[i, ] <- x[i, ] + x[i-1, ]
-    #}
-    return(y)
-}
-
-cumsub.matrix <- function(x) {
-    nrows <- dim(x)[1] 
-    ncols <- dim(x)[2]
-    y <- matrix(1, nrow = nrows, ncol = ncols)
-    y[1, ] <- x[1, ]
-    for (i in 2:nrows) {
-        y[i, ] <- x[i, ] - x[i-1, ]
-    }
-    return(y)
-}
-
-#-------------------------------------------------------------------------------
-
-getParams1 <- function(input, pnames) {
-    # input[["run_simul"]]
-
-    params <- lapply(pnames, function(p) { input[[p]] })
-    names(params) <- pnames
-    params
-}
-
-#-------------------------------------------------------------------------------
+#=-------------------------------------------------------------------------------
 # setup mortgage quantities
 
 setup_mortgage_monthly <- function(start_prop_value = 300000, 
@@ -111,8 +42,7 @@ setup_mortgage_monthly <- function(start_prop_value = 300000,
     )
 }
 
-#-------------------------------------------------------------------------------
-
+#=-------------------------------------------------------------------------------
 make_mortgage_annual <- function(monthly_data = NULL) {
     
     annual_data <- monthly_data[ (1:nrow(monthly_data)) %% 12 == 0, c(1, 2, 6, 7, 8)]
@@ -125,9 +55,7 @@ make_mortgage_annual <- function(monthly_data = NULL) {
     
 }
 
-#-------------------------------------------------------------------------------
-# doing the actual work
-#-----------------------
+#=-------------------------------------------------------------------------------
 simulate_tradeoff <- function(start_prop_value = NULL,
                               down_payment_pct = NULL,
                               mortgage_rate = NULL,
@@ -247,11 +175,13 @@ simulate_tradeoff <- function(start_prop_value = NULL,
   # monthly.rent.lambda <- annual.rent.mean / n.periods
   annual.rent.lambda <- 1.0 / annual.rent.mean
 
+
   #-------------------------------------------------
   # simulate Returns
   monthly.appr.returns      <- matrix(0, n.obs, n.sim)
   monthly.invest.returns    <- matrix(0, n.obs, n.sim)
   monthly.inflation.returns <- matrix(0, n.obs, n.sim)
+  # monthly.rent.returns      <- matrix(0, n.obs, n.sim)       # rent should really be increase only yearly
 
   monthly.appr.returns[]      <- rnorm(n.obs*n.sim, mean = monthly.appr, sd = monthly.appr.sd)
   monthly.invest.returns[]    <- rnorm(n.obs*n.sim, mean = monthly.invest, sd = monthly.invest.sd)
@@ -330,10 +260,7 @@ simulate_tradeoff <- function(start_prop_value = NULL,
   return(sim.tradeoff)
 }
 
-#-------------------------------------------------------------------------------
-# three plots
-#-------------
-
+#=-------------------------------------------------------------------------------
 plot_sims <- function(n.sim, n.years, sim.to) {
     
     par(cex.main = 1.5)
@@ -432,4 +359,8 @@ plot_sims <- function(n.sim, n.years, sim.to) {
     lines(to.dens.toplot.x, to.dens.toplot.y, col="red2", lwd=3)
 
 }
+
+#=-------------------------------------------------------------------------------
+
+## ---- end-of-my_functions_intro_2
 
