@@ -166,6 +166,8 @@ a.button span {
 }
 #view-on-github {
   margin-right: 0;
+  width: auto;
+  padding-right: 8px;
 }
 
 code, pre {
@@ -268,7 +270,7 @@ h3 {
   margin-bottom: 8px;
   font-size: 18px;
   font-weight: bold;
-  color: #d5000d;
+  color: #000090;
 }
 
 h4 {
