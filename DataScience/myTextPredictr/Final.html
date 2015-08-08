@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Giovanni Fossati" />
+
+
+<title>Building a Text Prediction Algorithm: Summary</title>
+
+<script src="../common/libs/jquery-1.11.0/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="../common/libs/bootstrap-3.3.1/css/cerulean.min.css" rel="stylesheet" />
+<script src="../common/libs/bootstrap-3.3.1/js/bootstrap.min.js"></script>
+<script src="../common/libs/bootstrap-3.3.1/shim/html5shiv.min.js"></script>
+<script src="../common/libs/bootstrap-3.3.1/shim/respond.min.js"></script>
+
+<script src="../common/js/toggle_GF.js"></script>
+
+
+
+<link rel="stylesheet" href="../common/css/gf_xnew_nolines.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img { 
+  max-width:100%; 
+  height: auto; 
+}
+</style>
+<div class="container-fluid main-container">
+
+
+<div id="header">
+<h1 class="title">Building a Text Prediction Algorithm: Summary</h1>
+<h4 class="author"><em>Giovanni Fossati</em></h4>
+</div>
+
+
+<p><a name="SUMMARY"></a></p>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This report illustrates the work done after obtaining the first <em>master list</em> of n-grams, <span class="math">\(n = 3, 4, 5\)</span>.</p>
+<p>It is still very much in progress, and for now not much more than a skeleton.</p>
+<div id="raw-to-ngrams" class="section level2">
+<h2>Raw-to-ngrams</h2>
+<p>This phase is summarize in the <em>Milestone Report</em>, available <a href="http://pedrosan.github.io/DataScience/myTextPredictr/MilestoneReport/">here</a></p>
+<ul>
+<li>I cleaned the most pathological issues of the text in <code>perl</code> before feeding it to <code>R</code>.<br /></li>
+<li>In <code>perl</code> I did some more useful regex parsing to catch things like emoticon, hashtags, abbreviations, number-related pieces, profanities (I learned an awful lot more than I thought it would be possible on regex!!! I confess I did not know about the lookahead/lookbehind magic)</li>
+<li>In <code>R</code> I tokenize it into sentences (with NLP::annotate), because it seemed to improve n-gram tokenization, but in terms of speed and quality.</li>
+<li>In <code>perl</code> I did another pass at cleaning the sentences.</li>
+<li>With cleaned sentences, back to <code>R</code> for n-gram tokenization, 2/3/4/5-grams (did not use 2-grams.)</li>
+</ul>
+</div>
+<div id="n-grams-analysis" class="section level2">
+<h2>N-grams analysis</h2>
+<ul>
+<li>Back to <code>perl</code> for validation of the n-grams. If it seems like a lot of back and forth… in good part it is because some issues became more visible (literally speaking) after each tokenization.</li>
+<li>In <code>perl</code> I extracted a census of words from the sentences (I would cal that a <em>dictionary</em>).<br /> At first I was doing this from the n-grams until it dawned on me that it was overcounting words because of the shifting-window nature of n-grams.</li>
+<li>I handled the census of n-grams with good old command line! Pretty much piping into <code>sort</code> to <code>uniq -c</code> to <code>sort -k 1nr</code> and finally for formatting (n-grams were “;” separated words, and the above pipe leaves space separated count and string) an easy <code>awk</code>.</li>
+</ul>
+<p>The final table is something like this:</p>
+<pre><code>881;thanks;for;the;shout;out
+767;for;the;first;time;since
+619;let;me;know;if;you
+606;thank;you;for;the;follow
+541;i;thought;it;would;be
+419;this;is;the;first;time
+385;let;me;know;what;you</code></pre>
+<p>It was faster (not-slower) than doing this in R with the gained convenience of infinitely easier “access” to files for inspection and such.</p>
+<p>More <code>perl</code> for a couple more “advanced” operations:</p>
+<ul>
+<li>Rejecting n-grams containing words not occurring at a minimum number of times in the dictionary.<br /> In the end I cut at 5, leaving 126,000 words in the dictionary (out of &gt; 400,000) but accounting for 99.5% of the coverage.</li>
+<li>Making a census of n-gram “roots” (i.e. the first 4 words in a 5-gram), which I used (sort of) in the prediction process.<br /> Kind of like using the probability (frequency) of a word in a corpus as a discounting factor.</li>
+<li>This also gives relative frequencies of 5-th word for a given “root”, also potentially useful/usable information.</li>
+</ul>
+<p>The new 5-gram table looks like this now:</p>
+<pre><code>921;4;881;thanks;for;the;shout;out
+4325;243;767;for;the;first;time;since
+1257;37;619;let;me;know;if;you
+2384;196;606;thank;you;for;the;follow
+620;18;541;i;thought;it;would;be
+735;58;419;this;is;the;first;time
+540;28;385;let;me;know;what;you</code></pre>
+<ul>
+<li>First column is the total number of times the 4-subgram appears in the 5-grams set</li>
+<li>Second colum is how many different 5-grams have that 4-subgram as their root.</li>
+<li>Third column is the count of this particular 5-gram.</li>
+</ul>
+<p>For this particular “root” for instance these are its 5-grams.</p>
+<pre><code>921;4;881;thanks;for;the;shout;out
+921;4;36;thanks;for;the;shout;outs
+921;4;2;thanks;for;the;shout;last
+921;4;2;thanks;for;the;shout;buddy</code></pre>
+<p>For efficiency I also (again in <code>perl</code>) checked 3-grams agains 4- and 5-grams to keep only the 3-grams that were not contained in those higher order sets. Same for 4-grams against 5-grams.<br />This decreased the size of the 3-grams and 4-grams data sets significantly:</p>
+<ul>
+<li>for n-grams occurring at least 2 times: 3-grams went from 6.6M to 4.1M, 4-grams from 4.2M to 2.9M,</li>
+<li>for n-grams occurring at least 4 times: 3-grams went from 1.9M to 0.75M, 4-grams from 700k to 337M.</li>
+</ul>
+<p>I also cut 3- and 4-grams at a minimum count of 4, and 5-grams at 2.<br />With these cuts, the final tally was 755k 3-grams, 337K 4-grams, 1.4M 5-grams.</p>
+<p>I coded words as numbers, and look these up in the dictionary.<br />In the end I did not rely on hashes for this because it did not quite provide such a spectacular performance improvement over more mundane arrays.</p>
+<p>I split the dictionary data frame <code>(ID, word, count)</code> in two vectors for word and counts indexed on the ID (the fact that some ID were not used because I dropped some words is not really a huge waste of memory, these are very small arrays).</p>
+<p>Getting ID from words by a plain <code>dict$word == &quot;text&quot;</code>, and then count as <code>count[ID]</code> is fast enough.<br />Moreover, creating this couple of arrays from the data frame turned out to be massively quicker than creating the hash, pretty much non-measureable compared to few seconds. Not worth the hassle especially considering that the delay in creating the hash when the application start can be annoying.</p>
+</div>
+<div id="prediction-algorithm" class="section level2">
+<h2>Prediction algorithm</h2>
+<p>I might come back to illustrate the prediction algorithm based on these data.<br />I was satisfied by its performance, both for speed and accuracy, but not too happy about the latter because it tends to give higher priority to short words. One easy improvement would be to increase the weight of “full n-gram matches” when they exist, because right now they can be diluted by the results of sub-n-gram matches.</p>
+<hr />
+</div>
+</div>
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

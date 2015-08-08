@@ -1,2 +1,4 @@
 # pedrosan.github.io
-main page
+
+repository of content of [pedrosan.github.io](http://pedrosan.github.io) website.
+
