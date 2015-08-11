@@ -63,6 +63,9 @@ a {
 }
 a:hover {
   color: #d5000c;
+  text-decoration: underline dotted #95000d;
+  background-color: #f6f6f6;
+  /* background-color: #d5d50c; */
 }
 
 header {
@@ -152,7 +155,8 @@ a.button:hover {
 a.button span {
   display: block;
   height: 23px;
-  padding-left: 50px;
+  padding-left: 40px;
+  /* padding-left: 50px; */
 }
 
 #download-zip span {
@@ -161,12 +165,23 @@ a.button span {
 #download-tar-gz span {
   background: transparent url(../images/tar-gz-icon.png) 12px 30% no-repeat;
 }
+
 #view-on-github span {
   background: transparent url(../images/octocat-icon.png) 6px 50% no-repeat;
 }
 #view-on-github {
-  margin-right: 0;
+  margin-right: 10px;
   width: auto;
+  padding-right: 8px;
+}
+
+#view-on-linkedin span {
+  background: transparent url(../images/linkedin-icon-28px.png) 6px 50% no-repeat;
+}
+#view-on-linkedin {
+  margin-right: 0px;
+  width: auto;
+  padding-left: 2px;
   padding-right: 8px;
 }
 
